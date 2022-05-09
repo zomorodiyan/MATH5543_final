@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-import matplotlib.animation as animation
+# import matplotlib.animation as animation
 
 
 def animPlot(x, u):
@@ -54,7 +54,8 @@ def animPlotE(x, u, uE):
     plt.ylabel("velocity (m.s^-1)")
     plt.legend()
 
-    ani = animation.FuncAnimation(fig, animate, interval=100, blit=True, save_count=50)
+    # next line commented for flake8
+    # ani = animation.FuncAnimation(fig, animate, interval=100, blit=True, save_count=50)
 
     # To save the animation, use e.g.
     #
