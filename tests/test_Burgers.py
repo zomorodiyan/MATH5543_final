@@ -32,6 +32,12 @@ class TestBurgers(unittest.TestCase):
         # map(lambda x, y: self.assertAlmostEqual(x,y), p1, p2)
         np.testing.assert_array_almost_equal(fom.u, np.array([0, 0.72, 0, -0.72, 0]))
 
+    def test_solve(self):
+        fom = Burgers(grid_size=101, dt=0.0005, nu=0.2)
+        for i in range(1001):
+            fom.up_dudt()
+            fom.up_u()
+
 
 if __name__ == "__main__":
     unittest.main()
