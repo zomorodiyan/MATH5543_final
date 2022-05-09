@@ -84,17 +84,13 @@ def LaxWendroff(u, nx, c):
 
     un = np.copy(u)
     i = nx
-    u[i] = (
-        un[i]
-        - 0.5 * c * (un[0] - un[i - 1])
-        + 0.5 * (c ** 2) * (un[0] - 2 * un[i] + un[i - 1])
-    )
+    a = un[i] - 0.5 * c * (un[0] - un[i - 1])
+    b = 0.5 * (c ** 2) * (un[0] - 2 * un[i] + un[i - 1])
+    u[i] = a + b
     for i in range(nx - 1, 0, -1):
-        u[i] = (
-            un[i]
-            - 0.5 * c * (un[i + 1] - un[i - 1])
-            + 0.5 * (c ** 2) * (un[i + 1] - 2 * un[i] + un[i - 1])
-        )
+        a = un[i] - 0.5 * c * (un[i + 1] - un[i - 1])
+        b = 0.5 * (c ** 2) * (un[i + 1] - 2 * un[i] + un[i - 1])
+        u[i] = a + b
     u[0] = u[nx]
     return u
 
