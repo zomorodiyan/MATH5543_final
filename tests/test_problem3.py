@@ -11,17 +11,16 @@ from fdm import visualization as vis
 class Test_1D_advection(unittest.TestCase):
     # @pytest.mark.skip(reason="how to skip test")
     def test_test(self):  # function's name have to start with "test_"
-        a = 1.0
-        tmax = 10
-        Lx = 1
-        nx = 99
+        a = 2.0
+        tmax = 1.0
+        Lx = 1.0
+        nx = 99  # tune
         hx = Lx / (nx + 1)
-        # ht = 0.005
         ht = 0.01
         nt = int(tmax / ht) + 1
         x = np.linspace(0, Lx, nx + 1)
         c = a * ht / hx
-        u0 = np.sin(2 * np.pi * x)
+        u0 = np.exp(-600 * (x - 0.5) ** 2)
 
         uEuler, uLax, uRK3 = map(np.copy, (u0, u0, u0))
         u2DEuler, u2DLax, u2DRK3, uExact = map(
@@ -61,14 +60,11 @@ class Test_1D_advection(unittest.TestCase):
         # vis.plot(figNum, fileName, plotTitle, label1, label2, label3, label4, x, u2DEuler[ind], u2DLax[ind], u2DRK3[ind], uExact[ind])
 
         # animPlot(x, u2DEuler)
-        # animPlot(x, u2DLax)
-        # animPlot(x, u2DRK3)
-        # animPlot(x, uExact)
         vis.animPlotE(x, u2DRK3, uExact)
 
 
 def exactSol(x, t, a):
-    return np.sin(2 * np.pi * (x - a * t))
+    return np.exp(-600 * (x - 0.5 - a * t) ** 2)
 
 
 def Euler(u, nx, c):

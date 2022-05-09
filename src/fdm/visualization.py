@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# import matplotlib.animation as animation
+import matplotlib.animation as animation
 
 
 def animPlot(x, u):
@@ -30,7 +30,8 @@ def animPlot(x, u):
 
 
 def animPlotE(x, u, uE):
-
+    print("animPlotE is running ...")
+    breakpoint()
     fig, ax = plt.subplots()
 
     (line,) = ax.plot(x, u[0], "b", label="RK3")
@@ -49,12 +50,12 @@ def animPlotE(x, u, uE):
         lineE.set_ydata(uE[i])
         return line, lineE
 
-    plt.title("Runge Kutta 3th order")
+    plt.title("Runge Kutta 3rd order")
     plt.xlabel("time (s)")
     plt.ylabel("velocity (m.s^-1)")
     plt.legend()
 
-    # ani = animation.FuncAnimation(fig, animate, interval=100, blit=True, save_count=50)
+    ani = animation.FuncAnimation(fig, animate, interval=100, blit=True, save_count=50)
 
     # To save the animation, use e.g.
     #
@@ -65,7 +66,7 @@ def animPlotE(x, u, uE):
     # writer = animation.FFMpegWriter(fps=15, metadata=dict(artist="Me"), bitrate=1800)
     # ani.save("RK3.mp4", writer=writer)
 
-    # plt.show()
+    plt.show()
 
 
 def plot(
@@ -114,7 +115,6 @@ def plotErr(
     phi3,
     phi4,
 ):
-
     plt.figure(figNum)
     plt.plot(x, phi1, "b", label=label1)
     plt.plot(
