@@ -10,61 +10,49 @@ from fdm import visualization as vis
 
 class Test_1D_advection(unittest.TestCase):
     # @pytest.mark.skip(reason="how to skip test")
-    def test_test(self):  # function's name have to start with "test_"
+    def test_(self):  # function's name have to start with "test_"
         a = 2.0
         tmax = 1.0
         Lx = 1.0
         nx = 99  # tune
         hx = Lx / (nx + 1)
-        ht = 0.01
+        ht = 0.003
         nt = int(tmax / ht) + 1
         x = np.linspace(0, Lx, nx + 1)
         c = a * ht / hx
         u0 = np.exp(-600 * (x - 0.5) ** 2)
 
-        uEuler, uLax, uRK3 = map(np.copy, (u0, u0, u0))
-        u2DEuler, u2DLax, u2DRK3, uExact = map(
+        u2DEuler, u2DLax, u2DLaxF, u2DBW, u2DRK3, uExact = map(
             np.zeros,
-            ((nt + 1, nx + 1), (nt + 1, nx + 1), (nt + 1, nx + 1), (nt + 1, nx + 1)),
+            (
+                (nt + 1, nx + 1),
+                (nt + 1, nx + 1),
+                (nt + 1, nx + 1),
+                (nt + 1, nx + 1),
+                (nt + 1, nx + 1),
+                (nt + 1, nx + 1),
+            ),
         )
-        u2DEuler[0], u2DLax[0], u2DRK3[0] = map(np.copy, (u0, u0, u0))
+        u2DEuler[0], u2DLax[0], u2DRK3[0], u2DLaxF[0], u2DLaxF[0] = map(
+            np.copy, (u0, u0, u0, u0, u0)
+        )
 
         for n in range(nt):
-            uEuler = Euler(uEuler, nx, c)
-            uLax = LaxWendroff(uLax, nx, c)
-            uRK3 = rungeKutta(uRK3, nx, c)
-            u2DEuler[n + 1] = uEuler
-            u2DLax[n] = uLax
-            u2DRK3[n] = uRK3
+            u2DEuler[n + 1] = Euler(u2DEuler[n], nx, c)
+            u2DLax[n + 1] = LaxWendroff(u2DLax[n], nx, c)
+            u2DLaxF[n + 1] = LaxFriedrichs(u2DLaxF[n], nx, c)
+            u2DRK3[n + 1] = rungeKutta(u2DRK3[n], nx, c)
+            u2DBW[n + 1] = BeamWarming(u2DBW[n], nx, c)
 
         time = np.arange(0, tmax + ht / 10, ht)
         for n in range(nt):
             uExact[n] = exactSol(x, time[n], a)
 
-        """
-        figNum = 1
-        fileName = "t1c1"
-        plotTitle = "t = 1s and c = 1"
-        label1 = "Euler"
-        label2 = "Lax Wendroff"
-        label3 = "Runge Kutta 3th"
-        label4 = "Exact Solution"
-        ind = 100
-        # vis.plot(figNum, fileName, plotTitle, label1, label2, label3, label4, x, u2DEuler[ind], u2DLax[ind], u2DRK3[ind], uExact[ind])
-
-        figNum = 2
-        fileName = "t10c1"
-        plotTitle = "t = 10s and c = 1"
-        ind = 1000
-        """
-        # vis.plot(figNum, fileName, plotTitle, label1, label2, label3, label4, x, u2DEuler[ind], u2DLax[ind], u2DRK3[ind], uExact[ind])
-
-        # animPlot(x, u2DEuler)
-        vis.animPlotE(x, u2DRK3, uExact)
+        vis.animPlotE(x, u2DLax, uExact)
 
 
 def exactSol(x, t, a):
-    return np.exp(-600 * (x - 0.5 - a * t) ** 2)
+    return np.exp(-600 * (x - a * t - np.floor(x - a * t) - 0.5) ** 2)
 
 
 def Euler(u, nx, c):
@@ -76,8 +64,21 @@ def Euler(u, nx, c):
     return u
 
 
-def LaxWendroff(u, nx, c):
+def BeamWarming(u, nx, c):
+    un = np.copy(u)
+    i = nx
+    a = un[i] - 0.5 * c * (3 * un[i] - 4 * un[i - 1] + un[i - 2])
+    b = 0.5 * (c ** 2) * (un[i] - 2 * un[i - 1] + un[i - 2])
+    u[i] = a + b
+    for i in range(nx - 1, 0, -1):
+        a = un[i] - 0.5 * c * (3 * un[i] - 4 * un[i - 1] + un[i - 2])
+        b = 0.5 * (c ** 2) * (un[i] - 2 * un[i - 1] + un[i - 2])
+        u[i] = a + b
+    u[0] = u[nx]
+    return u
 
+
+def LaxWendroff(u, nx, c):
     un = np.copy(u)
     i = nx
     a = un[i] - 0.5 * c * (un[0] - un[i - 1])
@@ -86,6 +87,20 @@ def LaxWendroff(u, nx, c):
     for i in range(nx - 1, 0, -1):
         a = un[i] - 0.5 * c * (un[i + 1] - un[i - 1])
         b = 0.5 * (c ** 2) * (un[i + 1] - 2 * un[i] + un[i - 1])
+        u[i] = a + b
+    u[0] = u[nx]
+    return u
+
+
+def LaxFriedrichs(u, nx, c):
+    un = np.copy(u)
+    i = nx
+    a = un[i] - 0.5 * c * (un[0] - un[i - 1])
+    b = 0.5 * (un[0] - 2 * un[i] + un[i - 1])
+    u[i] = a + b
+    for i in range(nx - 1, 0, -1):
+        a = un[i] - 0.5 * c * (un[i + 1] - un[i - 1])
+        b = 0.5 * (un[i + 1] - 2 * un[i] + un[i - 1])
         u[i] = a + b
     u[0] = u[nx]
     return u

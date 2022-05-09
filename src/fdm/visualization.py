@@ -31,7 +31,6 @@ def animPlot(x, u):
 
 def animPlotE(x, u, uE):
     print("animPlotE is running ...")
-    breakpoint()
     fig, ax = plt.subplots()
 
     (line,) = ax.plot(x, u[0], "b", label="RK3")
