@@ -6,49 +6,58 @@ import unittest
 # import matplotlib.animation as animation
 
 from fdm import visualization as vis
+from err import compare
+from err import order
 
 
 class Test_1D_advection(unittest.TestCase):
-    # @pytest.mark.skip(reason="how to skip test")
+    def setUp(self):
+        self.errz = np.zeros(4, 4, 4)
+
     def test_(self):  # function's name have to start with "test_"
         a = 2.0
         tmax = 1.0
         Lx = 1.0
-        nx = 99  # tune
-        hx = Lx / (nx + 1)
-        ht = 0.003
         nt = int(tmax / ht) + 1
-        x = np.linspace(0, Lx, nx + 1)
-        c = a * ht / hx
-        u0 = np.exp(-600 * (x - 0.5) ** 2)
+        for ii, nti in enumerate([99, 199, 399, 799]):
+            for jj, nxi in enumerate([99, 199, 399, 799]):
+                hx = Lx / (nx + 1)
+                ht = 0.003
+                x = np.linspace(0, Lx, nx + 1)
+                c = a * ht / hx
+                u0 = np.exp(-600 * (x - 0.5) ** 2)
 
-        u2DEuler, u2DLax, u2DLaxF, u2DBW, u2DRK3, uExact = map(
-            np.zeros,
-            (
-                (nt + 1, nx + 1),
-                (nt + 1, nx + 1),
-                (nt + 1, nx + 1),
-                (nt + 1, nx + 1),
-                (nt + 1, nx + 1),
-                (nt + 1, nx + 1),
-            ),
-        )
-        u2DEuler[0], u2DLax[0], u2DRK3[0], u2DLaxF[0], u2DLaxF[0] = map(
-            np.copy, (u0, u0, u0, u0, u0)
-        )
+                u2DEuler, u2DLax, u2DLaxF, u2DBW, u2DRK3, uExact = map(
+                    np.zeros,
+                    (
+                        (nt + 1, nx + 1),
+                        (nt + 1, nx + 1),
+                        (nt + 1, nx + 1),
+                        (nt + 1, nx + 1),
+                        (nt + 1, nx + 1),
+                        (nt + 1, nx + 1),
+                    ),
+                )
+                u2DEuler[0], u2DLax[0], u2DRK3[0], u2DLaxF[0], u2DLaxF[0] = map(
+                    np.copy, (u0, u0, u0, u0, u0)
+                )
 
-        for n in range(nt):
-            u2DEuler[n + 1] = Euler(u2DEuler[n], nx, c)
-            u2DLax[n + 1] = LaxWendroff(u2DLax[n], nx, c)
-            u2DLaxF[n + 1] = LaxFriedrichs(u2DLaxF[n], nx, c)
-            u2DRK3[n + 1] = rungeKutta(u2DRK3[n], nx, c)
-            u2DBW[n + 1] = BeamWarming(u2DBW[n], nx, c)
+                for n in range(nt):
+                    u2DEuler[n + 1] = Euler(u2DEuler[n], nx, c)
+                    u2DLax[n + 1] = LaxWendroff(u2DLax[n], nx, c)
+                    u2DLaxF[n + 1] = LaxFriedrichs(u2DLaxF[n], nx, c)
+                    u2DRK3[n + 1] = rungeKutta(u2DRK3[n], nx, c)
+                    u2DBW[n + 1] = BeamWarming(u2DBW[n], nx, c)
 
-        time = np.arange(0, tmax + ht / 10, ht)
-        for n in range(nt):
-            uExact[n] = exactSol(x, time[n], a)
-
-        vis.animPlotE(x, u2DLax, uExact)
+                time = np.arange(0, tmax + ht / 10, ht)
+                for n in range(nt):
+                    uExact[n] = exactSol(x, time[n], a)
+                self.errz[0, ii, jj] = compare(uExact, u2DEuler)
+                self.errz[1, ii, jj] = compare(uExact, u2DLax)  # lax_wendrof
+                self.errz[2, ii, jj] = compare(uExact, u2DLaxF)  # lax_fredrichs
+                self.errz[2, ii, jj] = compare(uExact, u2DRK3)  # lax_fredrichs
+            # vis.animPlotE(x, u2DLax, uExact)
+        print(order(self.errz))  # asserts their respective order of convergence
 
 
 def exactSol(x, t, a):

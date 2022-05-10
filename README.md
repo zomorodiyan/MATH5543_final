@@ -43,10 +43,18 @@ To run the project locally:
     k=1/100     3.23e-4                 1.38e-4
 
     from the data above we can conclude:
-    r_Backward-Euler = 1.97
-    r_Crank-Nicolson = 2.12
+    r_Backward-Euler = 1.91
+    r_Crank-Nicolson = 2.22
 
 ### problem_2 (2D IBVP) <skiped>
 ### problem_3 (1D Advection) <skiped>
+#### a)
+    the subroutine is present at tests/test_problem_3.py
+#### b)
+    the subroutines are present at tests/test_problem_3.py
+#### c)
+    see Test_1D_advection >> test_ from tests/test_problem_3.py asserts the
+    orders of convergence (approximately)
+
 
 #### project structure template: https://github.com/mCodingLLC/SlapThatLikeButton-TestingStarterProject
